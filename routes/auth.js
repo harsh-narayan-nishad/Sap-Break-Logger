@@ -1,6 +1,6 @@
 /**
  * Authentication Routes
- * Handles user registration, login, and profile management
+ * Handles user registration, login, and profile management for the tracking system
  */
 
 const express = require('express');
@@ -12,14 +12,16 @@ const { authenticateToken } = require('../middleware/auth');
 const { 
   validateRequest, 
   registerValidation, 
-  loginValidation 
+  loginValidation,
+  profileUpdateValidation,
+  passwordChangeValidation
 } = require('../middleware/validation');
 
 /**
  * @route   POST /api/auth/register
  * @desc    Register a new user
  * @access  Public
- * @body    { username, email, password }
+ * @body    { name, email, password }
  */
 router.post('/register', registerValidation, validateRequest, authController.register);
 
@@ -30,6 +32,14 @@ router.post('/register', registerValidation, validateRequest, authController.reg
  * @body    { email, password }
  */
 router.post('/login', loginValidation, validateRequest, authController.login);
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user (updates status to inactive)
+ * @access  Private
+ * @header  Authorization: Bearer <token>
+ */
+router.post('/logout', authenticateToken, authController.logout);
 
 /**
  * @route   GET /api/auth/profile
@@ -44,9 +54,9 @@ router.get('/profile', authenticateToken, authController.getProfile);
  * @desc    Update user profile
  * @access  Private
  * @header  Authorization: Bearer <token>
- * @body    { username?, email? }
+ * @body    { name?, email?, avatar? }
  */
-router.put('/profile', authenticateToken, authController.updateProfile);
+router.put('/profile', authenticateToken, profileUpdateValidation, validateRequest, authController.updateProfile);
 
 /**
  * @route   PUT /api/auth/change-password
@@ -55,6 +65,14 @@ router.put('/profile', authenticateToken, authController.updateProfile);
  * @header  Authorization: Bearer <token>
  * @body    { currentPassword, newPassword }
  */
-router.put('/change-password', authenticateToken, authController.changePassword);
+router.put('/change-password', authenticateToken, passwordChangeValidation, validateRequest, authController.changePassword);
+
+/**
+ * @route   GET /api/auth/users
+ * @desc    Get all users (for admin/management purposes)
+ * @access  Private
+ * @header  Authorization: Bearer <token>
+ */
+router.get('/users', authenticateToken, authController.getAllUsers);
 
 module.exports = router;

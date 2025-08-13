@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Break Tracking Backend API",
-    "description": "Complete API collection for the break tracking application",
+    "name": "Employee Tracking System API",
+    "description": "Complete API collection for the employee tracking system backend",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -42,7 +42,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -99,7 +99,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"john_updated\",\n  \"email\": \"john.updated@example.com\"\n}"
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"avatar\": \"https://example.com/avatar.jpg\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/profile",
@@ -130,11 +130,37 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/users",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "users"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Break Management",
+      "name": "Tracking Management",
       "item": [
         {
           "name": "Start Break",
@@ -148,12 +174,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2025-01-20\",\n  \"startTime\": \"14:30\"\n}"
+              "raw": "{\n  \"startTime\": \"14:30\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/breaks/start",
+              "raw": "{{base_url}}/tracking/start-break",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "start"]
+              "path": ["tracking", "start-break"]
             }
           },
           "response": []
@@ -170,12 +196,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"date\": \"2025-01-20\",\n  \"endTime\": \"14:45\"\n}"
+              "raw": "{\n  \"endTime\": \"14:45\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/breaks/end",
+              "raw": "{{base_url}}/tracking/end-break",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "end"]
+              "path": ["tracking", "end-break"]
             }
           },
           "response": []
@@ -186,9 +212,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/breaks/today",
+              "raw": "{{base_url}}/tracking/today",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "today"]
+              "path": ["tracking", "today"]
             }
           },
           "response": []
@@ -199,9 +225,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/breaks/today?date=2025-01-20",
+              "raw": "{{base_url}}/tracking/today?date=2025-01-20",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "today"],
+              "path": ["tracking", "today"],
               "query": [
                 {
                   "key": "date",
@@ -218,9 +244,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/breaks/stats?period=week",
+              "raw": "{{base_url}}/tracking/stats?period=week",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "stats"],
+              "path": ["tracking", "stats"],
               "query": [
                 {
                   "key": "period",
@@ -232,14 +258,49 @@
           "response": []
         },
         {
+          "name": "Update Work Time",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"minutes\": 480\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tracking/work-time",
+              "host": ["{{base_url}}"],
+              "path": ["tracking", "work-time"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users (Tracking)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tracking/users",
+              "host": ["{{base_url}}"],
+              "path": ["tracking", "users"]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Get User Monthly Data",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/breaks/user/{{userId}}/monthly?month=1&year=2025",
+              "raw": "{{base_url}}/tracking/user/{{userId}}/monthly?month=1&year=2025",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "user", "{{userId}}", "monthly"],
+              "path": ["tracking", "user", "{{userId}}", "monthly"],
               "query": [
                 {
                   "key": "month",
@@ -260,9 +321,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/breaks/monthly?month=1&year=2025",
+              "raw": "{{base_url}}/tracking/monthly?month=1&year=2025",
               "host": ["{{base_url}}"],
-              "path": ["breaks", "monthly"],
+              "path": ["tracking", "monthly"],
               "query": [
                 {
                   "key": "month",
@@ -311,6 +372,15 @@
           "    if (response.data && response.data.token) {",
           "        pm.environment.set('token', response.data.token);",
           "        console.log('Token saved automatically');",
+          "    }",
+          "}",
+          "",
+          "// Auto-save user ID after login for testing",
+          "if (pm.response.code === 200 && pm.request.url.path.includes('/auth/login')) {",
+          "    const response = pm.response.json();",
+          "    if (response.data && response.data.user && response.data.user.id) {",
+          "        pm.environment.set('userId', response.data.user.id);",
+          "        console.log('User ID saved automatically');",
           "    }",
           "}"
         ],

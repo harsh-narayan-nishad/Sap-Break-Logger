@@ -1,6 +1,6 @@
-# Break Tracking Backend 🚀
+# Employee Tracking System Backend 🚀
 
-A production-level backend API for a break-tracking application built with Express.js, MongoDB, and JWT authentication.
+A production-level backend API for the employee tracking system built with Express.js, MongoDB, and JWT authentication. This backend is specifically designed to work with the React frontend tracking system.
 
 ## 🏗️ Architecture
 
@@ -14,16 +14,16 @@ A production-level backend API for a break-tracking application built with Expre
 ## 📁 Project Structure
 
 ```
-break-tracking-backend/
+Backend/
 ├── models/                 # Database models
-│   ├── User.js            # User schema and methods
-│   └── Break.js           # Break tracking schema
+│   ├── User.js            # User schema with tracking status
+│   └── DayRecord.js       # Daily tracking records
 ├── controllers/            # Business logic
 │   ├── authController.js   # Authentication operations
-│   └── breakController.js  # Break management operations
+│   └── trackingController.js # Tracking operations
 ├── routes/                 # API route definitions
 │   ├── auth.js            # Authentication routes
-│   └── breaks.js          # Break management routes
+│   └── tracking.js        # Tracking management routes
 ├── middleware/             # Custom middleware
 │   ├── auth.js            # JWT authentication
 │   ├── errorHandler.js    # Error handling
@@ -44,18 +44,12 @@ break-tracking-backend/
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd break-tracking-backend
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Environment setup**
+2. **Environment setup**
    ```bash
    # Copy the environment template
    cp env.example .env
@@ -64,15 +58,15 @@ break-tracking-backend/
    nano .env
    ```
 
-4. **Configure environment variables**
+3. **Configure environment variables**
    ```env
-   MONGODB_URI=mongodb://localhost:27017/break-tracking
+   MONGODB_URI=mongodb://localhost:27017/employee-tracking
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    PORT=5000
    NODE_ENV=development
    ```
 
-5. **Start the server**
+4. **Start the server**
    ```bash
    # Development mode with auto-reload
    npm run dev
@@ -96,24 +90,6 @@ The server will start on `http://localhost:5000` (or your configured PORT).
 | `RATE_LIMIT_WINDOW_MS` | Rate limiting window in milliseconds | 900000 (15 min) | ❌ |
 | `RATE_LIMIT_MAX_REQUESTS` | Max requests per window | 100 | ❌ |
 
-### MongoDB Setup
-
-1. **Local MongoDB**
-   ```bash
-   # Install MongoDB locally
-   brew install mongodb-community  # macOS
-   sudo apt-get install mongodb    # Ubuntu
-   
-   # Start MongoDB service
-   brew services start mongodb-community  # macOS
-   sudo systemctl start mongod            # Ubuntu
-   ```
-
-2. **MongoDB Atlas (Cloud)**
-   - Create account at [MongoDB Atlas](https://www.mongodb.com/atlas)
-   - Create a new cluster
-   - Get connection string and update `MONGODB_URI`
-
 ## 📚 API Documentation
 
 ### Base URL
@@ -129,7 +105,7 @@ POST /auth/register
 Content-Type: application/json
 
 {
-  "username": "john_doe",
+  "name": "John Doe",
   "email": "john@example.com",
   "password": "password123"
 }
@@ -143,8 +119,10 @@ Content-Type: application/json
   "data": {
     "user": {
       "id": "user_id",
-      "username": "john_doe",
+      "name": "John Doe",
       "email": "john@example.com",
+      "status": "inactive",
+      "dailyWorkTime": 0,
       "createdAt": "2025-01-20T10:00:00.000Z",
       "updatedAt": "2025-01-20T10:00:00.000Z"
     },
@@ -176,40 +154,38 @@ Content-Type: application/json
 }
 ```
 
-### Break Management Endpoints
+### Tracking Management Endpoints
 
-**Note**: All break endpoints require authentication. Include the JWT token in the Authorization header:
+**Note**: All tracking endpoints require authentication. Include the JWT token in the Authorization header:
 ```
 Authorization: Bearer <your_jwt_token>
 ```
 
 #### Start Break
 ```http
-POST /breaks/start
+POST /tracking/start-break
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "date": "2025-01-20",
   "startTime": "14:30"
 }
 ```
 
 #### End Break
 ```http
-POST /breaks/end
+POST /tracking/end-break
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "date": "2025-01-20",
   "endTime": "14:45"
 }
 ```
 
 #### Get Today's Data
 ```http
-GET /breaks/today
+GET /tracking/today
 Authorization: Bearer <token>
 ```
 
@@ -218,7 +194,7 @@ Authorization: Bearer <token>
 
 #### Get Monthly Data for User
 ```http
-GET /breaks/user/:userId/monthly
+GET /tracking/user/:userId/monthly
 Authorization: Bearer <token>
 ```
 
@@ -228,7 +204,7 @@ Authorization: Bearer <token>
 
 #### Get All Users Monthly Data
 ```http
-GET /breaks/monthly
+GET /tracking/monthly
 Authorization: Bearer <token>
 ```
 
@@ -238,39 +214,38 @@ Authorization: Bearer <token>
 
 #### Get User Statistics
 ```http
-GET /breaks/stats
+GET /tracking/stats
 Authorization: Bearer <token>
 ```
 
 **Query Parameters:**
 - `period` (optional): 'week', 'month', or 'year' (default: 'week')
 
+#### Update Work Time
+```http
+PUT /tracking/work-time
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "minutes": 480
+}
+```
+
+#### Get All Users
+```http
+GET /tracking/users
+Authorization: Bearer <token>
+```
+
 ## 🧪 Testing with Postman
 
-### 1. Import Collection
-Download the Postman collection from the project or create your own with the endpoints above.
-
-### 2. Test Flow
-
-1. **Register a new user**
-   - Method: `POST`
-   - URL: `http://localhost:5000/api/auth/register`
-   - Body: JSON with username, email, and password
-
-2. **Login to get token**
-   - Method: `POST`
-   - URL: `http://localhost:5000/api/auth/login`
-   - Body: JSON with email and password
-   - Copy the token from the response
-
-3. **Use token for authenticated requests**
-   - Add header: `Authorization: Bearer <your_token>`
-   - Test break endpoints
-
-### 3. Environment Variables in Postman
-Create a Postman environment with:
-- `base_url`: `http://localhost:5000/api`
-- `token`: Your JWT token after login
+1. **Import the collection**: Use the provided Postman collection
+2. **Set environment variables**:
+   - `base_url`: `http://localhost:5000/api`
+   - `token`: (will be auto-filled after login)
+3. **Test flow**:
+   - Register → Login → Use token for protected endpoints
 
 ## 🔒 Security Features
 
@@ -287,27 +262,51 @@ Create a Postman environment with:
 ### User Schema
 ```javascript
 {
-  username: String (unique, required),
+  name: String (required),
   email: String (unique, required),
   password: String (hashed, required),
-  createdAt: Date,
-  updatedAt: Date
+  avatar: String (optional),
+  status: 'active' | 'break' | 'inactive',
+  currentBreakStart: Date (optional),
+  dailyWorkTime: Number (minutes),
+  lastActiveDate: Date,
+  timestamps: true
 }
 ```
 
-### Break Schema
+### DayRecord Schema
 ```javascript
 {
   userId: ObjectId (ref: User),
-  date: Date (required),
-  startTime: String (HH:mm format),
-  endTime: String (HH:mm format, optional),
+  date: String (YYYY-MM-DD format),
   workTime: Number (minutes),
-  totalBreakDuration: Number (minutes),
-  status: String (Active/On Break/Completed),
-  breaks: Array of break objects
+  breaks: Array of break objects,
+  totalBreakTime: Number (minutes),
+  status: 'active' | 'break' | 'inactive' | 'completed',
+  lastActivity: Date,
+  timestamps: true
 }
 ```
+
+### Break Record Schema
+```javascript
+{
+  start: String (HH:mm format),
+  end: String (HH:mm format, optional),
+  duration: Number (minutes)
+}
+```
+
+## 🔄 Frontend Integration
+
+This backend is designed to work seamlessly with the React frontend tracking system:
+
+- **User Management**: Matches frontend User interface
+- **Break Tracking**: Supports start/end break functionality
+- **Work Time**: Tracks daily work time in minutes
+- **Monthly Data**: Provides calendar view data
+- **Real-time Status**: User status updates (active/break/inactive)
+- **Statistics**: Period-based analytics (week/month/year)
 
 ## 🚀 Production Deployment
 
@@ -324,13 +323,13 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
 npm install -g pm2
 
 # Start application
-pm2 start server.js --name "break-tracking-backend"
+pm2 start server.js --name "employee-tracking-backend"
 
 # Monitor
 pm2 monit
 
 # Restart
-pm2 restart break-tracking-backend
+pm2 restart employee-tracking-backend
 ```
 
 ### 3. Reverse Proxy (Nginx)
@@ -399,4 +398,4 @@ For support and questions:
 
 ---
 
-**Happy Coding! 🎉**
+**Happy Tracking! 🎯**

@@ -12,7 +12,7 @@ require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/auth');
-const breakRoutes = require('./routes/breaks');
+const trackingRoutes = require('./routes/tracking');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -49,14 +49,14 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
-    message: 'Break Tracking Backend is running',
+    message: 'Employee Tracking System Backend is running',
     timestamp: new Date().toISOString()
   });
 });
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/breaks', breakRoutes);
+app.use('/api/tracking', trackingRoutes);
 
 // 404 handler for undefined routes
 app.use('*', (req, res) => {

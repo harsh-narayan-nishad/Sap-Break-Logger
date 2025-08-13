@@ -1,6 +1,6 @@
 /**
  * Authentication Controller
- * Handles user registration, login, and JWT token generation
+ * Handles user registration, login, and profile management for the tracking system
  */
 
 const jwt = require('jsonwebtoken');
@@ -9,8 +9,6 @@ const { asyncHandler } = require('../middleware/errorHandler');
 
 /**
  * Generate JWT token for user
- * @param {Object} user - User object
- * @returns {string} - JWT token
  */
 const generateToken = (user) => {
   return jwt.sign(
@@ -23,31 +21,26 @@ const generateToken = (user) => {
 /**
  * Register a new user
  * POST /api/auth/register
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 const register = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { name, email, password } = req.body;
 
   // Check if user already exists
-  const existingUser = await User.findOne({
-    $or: [{ email }, { username }]
-  });
-
+  const existingUser = await User.findOne({ email });
   if (existingUser) {
     return res.status(400).json({
       error: true,
-      message: existingUser.email === email 
-        ? 'Email already registered' 
-        : 'Username already taken'
+      message: 'Email already registered'
     });
   }
 
   // Create new user
   const user = new User({
-    username,
+    name,
     email,
-    password
+    password,
+    status: 'inactive', // New users start as inactive
+    dailyWorkTime: 0
   });
 
   await user.save();
@@ -68,8 +61,6 @@ const register = asyncHandler(async (req, res) => {
 /**
  * Login user
  * POST /api/auth/login
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -92,6 +83,11 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
+  // Update user status to active on login
+  user.status = 'active';
+  user.lastActiveDate = new Date();
+  await user.save();
+
   // Generate token
   const token = generateToken(user);
 
@@ -108,8 +104,6 @@ const login = asyncHandler(async (req, res) => {
 /**
  * Get current user profile
  * GET /api/auth/profile
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 const getProfile = asyncHandler(async (req, res) => {
   res.status(200).json({
@@ -124,33 +118,27 @@ const getProfile = asyncHandler(async (req, res) => {
 /**
  * Update user profile
  * PUT /api/auth/profile
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 const updateProfile = asyncHandler(async (req, res) => {
-  const { username, email } = req.body;
+  const { name, email, avatar } = req.body;
   const updates = {};
 
   // Only update provided fields
-  if (username) updates.username = username;
+  if (name) updates.name = name;
   if (email) updates.email = email;
+  if (avatar !== undefined) updates.avatar = avatar;
 
-  // Check for duplicate username/email if updating
-  if (username || email) {
+  // Check for duplicate email if updating
+  if (email) {
     const existingUser = await User.findOne({
-      $or: [
-        ...(email ? [{ email }] : []),
-        ...(username ? [{ username }] : [])
-      ],
+      email,
       _id: { $ne: req.user._id }
     });
 
     if (existingUser) {
       return res.status(400).json({
         error: true,
-        message: existingUser.email === email 
-          ? 'Email already in use' 
-          : 'Username already taken'
+        message: 'Email already in use'
       });
     }
   }
@@ -174,8 +162,6 @@ const updateProfile = asyncHandler(async (req, res) => {
 /**
  * Change user password
  * PUT /api/auth/change-password
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
@@ -201,10 +187,45 @@ const changePassword = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Logout user (optional - client-side token removal)
+ * POST /api/auth/logout
+ */
+const logout = asyncHandler(async (req, res) => {
+  // Update user status to inactive on logout
+  await User.findByIdAndUpdate(req.user._id, {
+    status: 'inactive',
+    lastActiveDate: new Date()
+  });
+
+  res.status(200).json({
+    error: false,
+    message: 'Logout successful'
+  });
+});
+
+/**
+ * Get all users (for admin/management purposes)
+ * GET /api/auth/users
+ */
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find().select('-password').sort({ name: 1 });
+
+  res.status(200).json({
+    error: false,
+    message: 'Users retrieved successfully',
+    data: {
+      users: users.map(user => user.profile)
+    }
+  });
+});
+
 module.exports = {
   register,
   login,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  logout,
+  getAllUsers
 };

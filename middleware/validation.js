@@ -1,15 +1,12 @@
 /**
  * Request Validation Middleware
- * Uses express-validator to validate incoming request data
+ * Uses express-validator to validate incoming request data for the tracking system
  */
 
 const { validationResult } = require('express-validator');
 
 /**
  * Middleware to check for validation errors
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
  */
 const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
@@ -33,12 +30,10 @@ const validateRequest = (req, res, next) => {
  * Validation rules for user registration
  */
 const registerValidation = [
-  require('express-validator').body('username')
+  require('express-validator').body('name')
     .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters'),
   
   require('express-validator').body('email')
     .isEmail()
@@ -67,13 +62,46 @@ const loginValidation = [
 ];
 
 /**
+ * Validation rules for profile updates
+ */
+const profileUpdateValidation = [
+  require('express-validator').body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters'),
+  
+  require('express-validator').body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
+  
+  require('express-validator').body('avatar')
+    .optional()
+    .isURL()
+    .withMessage('Avatar must be a valid URL')
+];
+
+/**
+ * Validation rules for password change
+ */
+const passwordChangeValidation = [
+  require('express-validator').body('currentPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
+  
+  require('express-validator').body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long')
+    .matches(/\d/)
+    .withMessage('New password must contain at least one number')
+];
+
+/**
  * Validation rules for starting a break
  */
 const startBreakValidation = [
-  require('express-validator').body('date')
-    .isISO8601()
-    .withMessage('Date must be in ISO 8601 format (YYYY-MM-DD)'),
-  
   require('express-validator').body('startTime')
     .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
     .withMessage('Start time must be in HH:mm format')
@@ -83,13 +111,18 @@ const startBreakValidation = [
  * Validation rules for ending a break
  */
 const endBreakValidation = [
-  require('express-validator').body('date')
-    .isISO8601()
-    .withMessage('Date must be in ISO 8601 format (YYYY-MM-DD)'),
-  
   require('express-validator').body('endTime')
     .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
     .withMessage('End time must be in HH:mm format')
+];
+
+/**
+ * Validation rules for work time updates
+ */
+const workTimeValidation = [
+  require('express-validator').body('minutes')
+    .isFloat({ min: 0 })
+    .withMessage('Minutes must be a positive number')
 ];
 
 /**
@@ -98,8 +131,33 @@ const endBreakValidation = [
 const dateQueryValidation = [
   require('express-validator').query('date')
     .optional()
-    .isISO8601()
-    .withMessage('Date must be in ISO 8601 format (YYYY-MM-DD)')
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('Date must be in YYYY-MM-DD format')
+];
+
+/**
+ * Validation rules for month queries
+ */
+const monthQueryValidation = [
+  require('express-validator').query('month')
+    .optional()
+    .isInt({ min: 1, max: 12 })
+    .withMessage('Month must be between 1 and 12'),
+  
+  require('express-validator').query('year')
+    .optional()
+    .isInt({ min: 2020, max: 2030 })
+    .withMessage('Year must be between 2020 and 2030')
+];
+
+/**
+ * Validation rules for period queries
+ */
+const periodQueryValidation = [
+  require('express-validator').query('period')
+    .optional()
+    .isIn(['week', 'month', 'year'])
+    .withMessage('Period must be week, month, or year')
 ];
 
 /**
@@ -115,8 +173,13 @@ module.exports = {
   validateRequest,
   registerValidation,
   loginValidation,
+  profileUpdateValidation,
+  passwordChangeValidation,
   startBreakValidation,
   endBreakValidation,
+  workTimeValidation,
   dateQueryValidation,
+  monthQueryValidation,
+  periodQueryValidation,
   userIdValidation
 };
