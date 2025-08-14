@@ -1,16 +1,17 @@
 # 🧪 Employee Tracking System - API Testing Guide
 
-This guide provides comprehensive testing instructions for all API endpoints in the Employee Tracking System backend.
+This guide provides comprehensive testing instructions for all API endpoints in the Employee Tracking System backend based on the current implementation.
 
 ## 📋 Table of Contents
 
 1. [Prerequisites](#prerequisites)
 2. [Environment Setup](#environment-setup)
-3. [Testing with Postman](#testing-with-postman)
-4. [Direct API Testing](#direct-api-testing)
-5. [API Endpoint Testing](#api-endpoint-testing)
-6. [Test Scenarios](#test-scenarios)
-7. [Troubleshooting](#troubleshooting)
+3. [Current Backend Structure](#current-backend-structure)
+4. [Testing with Postman](#testing-with-postman)
+5. [Direct API Testing](#direct-api-testing)
+6. [API Endpoint Testing](#api-endpoint-testing)
+7. [Test Scenarios](#test-scenarios)
+8. [Troubleshooting](#troubleshooting)
 
 ## 🚀 Prerequisites
 
@@ -25,7 +26,7 @@ Before testing, ensure you have:
 ## 🔧 Environment Setup
 
 ### 1. Backend Environment Variables
-Create a `.env` file in the Backend directory:
+Create a `.env` file in the root directory (same level as server.js):
 
 ```env
 MONGODB_URI=mongodb://localhost:27017/employee-tracking
@@ -38,7 +39,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 ### 2. Start the Backend Server
 ```bash
-cd Backend
+# From the root directory (where server.js is located)
 npm install
 npm run dev
 ```
@@ -57,12 +58,38 @@ Expected response:
 }
 ```
 
+## 🏗️ Current Backend Structure
+
+The backend is currently implemented with the following structure:
+
+```
+Root Directory/
+├── server.js                 # Main server file
+├── package.json             # Dependencies
+├── .env                     # Environment variables
+├── routes/
+│   ├── auth.js             # Authentication routes
+│   └── tracking.js         # Tracking management routes
+├── controllers/
+│   ├── authController.js   # Authentication logic
+│   └── trackingController.js # Tracking logic
+├── models/
+│   ├── User.js             # User model
+│   ├── DayRecord.js        # Daily tracking model
+│   └── Break.js            # Break tracking model
+├── middleware/
+│   ├── auth.js             # JWT authentication
+│   ├── errorHandler.js     # Error handling
+│   └── validation.js       # Request validation
+└── postman_collection.json # API testing collection
+```
+
 ## 🧪 Testing with Postman
 
 ### 1. Import Postman Collection
 1. Open Postman
 2. Click "Import" button
-3. Select the `postman_collection.json` file from the Backend directory
+3. Select the `postman_collection.json` file from the root directory
 4. Collection will be imported with all endpoints
 
 ### 2. Set Up Postman Environment
@@ -326,9 +353,122 @@ curl -X PUT http://localhost:5000/api/auth/profile \
 
 ---
 
+#### 6. Change Password
+**Endpoint:** `PUT /api/auth/change-password`  
+**URL:** `http://localhost:5000/api/auth/change-password`  
+**Authentication:** Required (Bearer token)
+
+**Postman:**
+- Method: `PUT`
+- URL: `{{base_url}}/auth/change-password`
+- Headers: 
+  - `Authorization: Bearer {{token}}`
+  - `Content-Type: application/json`
+- Body (raw JSON):
+```json
+{
+  "currentPassword": "password123",
+  "newPassword": "newpassword123"
+}
+```
+
+**cURL:**
+```bash
+curl -X PUT http://localhost:5000/api/auth/change-password \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currentPassword": "password123",
+    "newPassword": "newpassword123"
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "error": false,
+  "message": "Password changed successfully"
+}
+```
+
+**Test Result:** ✅ Password changed successfully
+
+---
+
+#### 7. Get All Users
+**Endpoint:** `GET /api/auth/users`  
+**URL:** `http://localhost:5000/api/auth/users`  
+**Authentication:** Required (Bearer token)
+
+**Postman:**
+- Method: `GET`
+- URL: `{{base_url}}/auth/users`
+- Headers: `Authorization: Bearer {{token}}`
+- Body: None
+
+**cURL:**
+```bash
+curl -X GET http://localhost:5000/api/auth/users \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+**Expected Response:**
+```json
+{
+  "error": false,
+  "message": "Users retrieved successfully",
+  "data": {
+    "users": [
+      {
+        "id": "user_id_here",
+        "name": "Updated Test User",
+        "email": "updated@example.com",
+        "status": "active",
+        "dailyWorkTime": 0,
+        "createdAt": "2025-01-20T10:00:00.000Z",
+        "updatedAt": "2025-01-20T10:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Test Result:** ✅ All users retrieved successfully
+
+---
+
+#### 8. Logout User
+**Endpoint:** `POST /api/auth/logout`  
+**URL:** `http://localhost:5000/api/auth/logout`  
+**Authentication:** Required (Bearer token)
+
+**Postman:**
+- Method: `POST`
+- URL: `{{base_url}}/auth/logout`
+- Headers: `Authorization: Bearer {{token}}`
+- Body: None
+
+**cURL:**
+```bash
+curl -X POST http://localhost:5000/api/auth/logout \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+**Expected Response:**
+```json
+{
+  "error": false,
+  "message": "Logout successful"
+}
+```
+
+**Test Result:** ✅ User logged out, status changed to 'inactive'
+
+---
+
 ### 📊 Tracking Management Endpoints
 
-#### 6. Start Break
+#### 9. Start Break
 **Endpoint:** `POST /api/tracking/start-break`  
 **URL:** `http://localhost:5000/api/tracking/start-break`  
 **Authentication:** Required (Bearer token)
@@ -393,7 +533,7 @@ curl -X POST http://localhost:5000/api/tracking/start-break \
 
 ---
 
-#### 7. Get Today's Data
+#### 10. Get Today's Data
 **Endpoint:** `GET /api/tracking/today`  
 **URL:** `http://localhost:5000/api/tracking/today`  
 **Authentication:** Required (Bearer token)
@@ -447,7 +587,7 @@ curl -X GET http://localhost:5000/api/tracking/today \
 
 ---
 
-#### 8. End Break
+#### 11. End Break
 **Endpoint:** `POST /api/tracking/end-break`  
 **URL:** `http://localhost:5000/api/tracking/end-break`  
 **Authentication:** Required (Bearer token)
@@ -512,7 +652,7 @@ curl -X POST http://localhost:5000/api/tracking/end-break \
 
 ---
 
-#### 9. Update Work Time
+#### 12. Update Work Time
 **Endpoint:** `PUT /api/tracking/work-time`  
 **URL:** `http://localhost:5000/api/tracking/work-time`  
 **Authentication:** Required (Bearer token)
@@ -577,7 +717,7 @@ curl -X PUT http://localhost:5000/api/tracking/work-time \
 
 ---
 
-#### 10. Get User Statistics
+#### 13. Get User Statistics
 **Endpoint:** `GET /api/tracking/stats`  
 **URL:** `http://localhost:5000/api/tracking/stats`  
 **Authentication:** Required (Bearer token)
@@ -628,7 +768,7 @@ curl -X GET "http://localhost:5000/api/tracking/stats?period=week" \
 
 ---
 
-#### 11. Get All Users (Tracking)
+#### 14. Get All Users (Tracking)
 **Endpoint:** `GET /api/tracking/users`  
 **URL:** `http://localhost:5000/api/tracking/users`  
 **Authentication:** Required (Bearer token)
@@ -669,7 +809,7 @@ curl -X GET http://localhost:5000/api/tracking/users \
 
 ---
 
-#### 12. Get User Monthly Data
+#### 15. Get User Monthly Data
 **Endpoint:** `GET /api/tracking/user/:userId/monthly`  
 **URL:** `http://localhost:5000/api/tracking/user/USER_ID/monthly`  
 **Authentication:** Required (Bearer token)
@@ -721,7 +861,7 @@ curl -X GET "http://localhost:5000/api/tracking/user/USER_ID/monthly?month=1&yea
 
 ---
 
-#### 13. Get All Users Monthly Data
+#### 16. Get All Users Monthly Data
 **Endpoint:** `GET /api/tracking/monthly`  
 **URL:** `http://localhost:5000/api/tracking/monthly`  
 **Authentication:** Required (Bearer token)
@@ -766,77 +906,6 @@ curl -X GET "http://localhost:5000/api/tracking/monthly?month=1&year=2025" \
 ```
 
 **Test Result:** ✅ All users monthly data retrieved successfully
-
----
-
-#### 14. Change Password
-**Endpoint:** `PUT /api/auth/change-password`  
-**URL:** `http://localhost:5000/api/auth/change-password`  
-**Authentication:** Required (Bearer token)
-
-**Postman:**
-- Method: `PUT`
-- URL: `{{base_url}}/auth/change-password`
-- Headers: 
-  - `Authorization: Bearer {{token}}`
-  - `Content-Type: application/json`
-- Body (raw JSON):
-```json
-{
-  "currentPassword": "password123",
-  "newPassword": "newpassword123"
-}
-```
-
-**cURL:**
-```bash
-curl -X PUT http://localhost:5000/api/auth/change-password \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "currentPassword": "password123",
-    "newPassword": "newpassword123"
-  }'
-```
-
-**Expected Response:**
-```json
-{
-  "error": false,
-  "message": "Password changed successfully"
-}
-```
-
-**Test Result:** ✅ Password changed successfully
-
----
-
-#### 15. Logout User
-**Endpoint:** `POST /api/auth/logout`  
-**URL:** `http://localhost:5000/api/auth/logout`  
-**Authentication:** Required (Bearer token)
-
-**Postman:**
-- Method: `POST`
-- URL: `{{base_url}}/auth/logout`
-- Headers: `Authorization: Bearer {{token}}`
-- Body: None
-
-**cURL:**
-```bash
-curl -X POST http://localhost:5000/api/auth/logout \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-**Expected Response:**
-```json
-{
-  "error": false,
-  "message": "Logout successful"
-}
-```
-
-**Test Result:** ✅ User logged out, status changed to 'inactive'
 
 ---
 
@@ -932,7 +1001,7 @@ Expected: After 100 requests, get `429 Too Many Requests`
 **Problem:** `ECONNREFUSED` error
 **Solution:** 
 ```bash
-cd Backend
+# From root directory (where server.js is located)
 npm run dev
 ```
 
@@ -943,7 +1012,7 @@ npm run dev
 - Verify connection string in `.env`
 - Test connection: `mongosh "your_connection_string"`
 
-#### 3. JWT Token Expired
+#### 3. JWT Token Invalid
 **Problem:** `401 Unauthorized` with "Token expired"
 **Solution:** 
 - Login again to get new token
@@ -981,15 +1050,16 @@ npm run dev 2>&1 | tee server.log
 - [ ] User login
 - [ ] Get user profile
 - [ ] Update user profile
+- [ ] Change password
+- [ ] Get all users
 - [ ] Start break
 - [ ] Get today's data
 - [ ] End break
 - [ ] Update work time
 - [ ] Get user statistics
-- [ ] Get all users
+- [ ] Get all users (tracking)
 - [ ] Get user monthly data
 - [ ] Get all users monthly data
-- [ ] Change password
 - [ ] User logout
 - [ ] Error handling
 - [ ] Validation testing
@@ -999,7 +1069,7 @@ npm run dev 2>&1 | tee server.log
 ## 🎉 Success Criteria
 
 All tests pass when:
-- ✅ All endpoints return expected responses
+- ✅ All 16 endpoints return expected responses
 - ✅ Authentication works correctly
 - ✅ Data is properly stored and retrieved
 - ✅ Validation catches invalid input
@@ -1015,6 +1085,29 @@ If you encounter issues during testing:
 3. Verify environment configuration
 4. Check MongoDB connection
 5. Ensure all dependencies are installed
+6. Verify you're running commands from the root directory
+
+## 🚀 Quick Start Commands
+
+```bash
+# 1. Navigate to root directory (where server.js is located)
+cd /path/to/your/project
+
+# 2. Install dependencies
+npm install
+
+# 3. Create .env file
+cp env.example .env
+# Edit .env with your MongoDB connection
+
+# 4. Start server
+npm run dev
+
+# 5. Test health check
+curl http://localhost:5000/health
+
+# 6. Start testing with Postman or cURL
+```
 
 ---
 

@@ -5,6 +5,20 @@
 http://localhost:5000/api
 ```
 
+## 🏗️ Current Backend Structure
+The backend is implemented in the root directory with this structure:
+```
+Root Directory/
+├── server.js                 # Main server file
+├── package.json             # Dependencies
+├── .env                     # Environment variables
+├── routes/                  # API route definitions
+├── controllers/             # Business logic
+├── models/                  # Database models
+├── middleware/              # Custom middleware
+└── postman_collection.json # API testing collection
+```
+
 ## 🔐 Authentication Endpoints
 
 | Endpoint | Method | Auth | Description |
@@ -196,19 +210,74 @@ GET /tracking/monthly?month=1&year=2025
 
 ## 🚀 Quick Start Testing
 
-1. **Start server**: `npm run dev`
-2. **Health check**: `curl http://localhost:5000/health`
-3. **Register user**: Use registration endpoint
-4. **Login user**: Get JWT token
-5. **Test tracking**: Use token for protected endpoints
-6. **Verify data**: Check responses and database
+1. **Navigate to root directory** (where server.js is located)
+2. **Install dependencies**: `npm install`
+3. **Create .env file**: `cp env.example .env`
+4. **Configure environment variables** (MongoDB connection, JWT secret)
+5. **Start server**: `npm run dev`
+6. **Test health check**: `curl http://localhost:5000/health`
+7. **Start testing**: Use Postman collection or cURL commands
 
 ## 📱 Postman Tips
 
-1. **Environment Variables**: Set `base_url` and `token`
-2. **Auto-save Token**: Use the test script to auto-save tokens
-3. **Collection Runner**: Test multiple endpoints in sequence
-4. **Environment Switching**: Test different environments easily
+1. **Import Collection**: Use `postman_collection.json` from root directory
+2. **Environment Variables**: Set `base_url` and `token`
+3. **Auto-save Token**: Use the test script to auto-save tokens
+4. **Collection Runner**: Test multiple endpoints in sequence
+5. **Environment Switching**: Test different environments easily
+
+## 🔧 Environment Setup
+
+### Required Environment Variables
+```env
+MONGODB_URI=mongodb://localhost:27017/employee-tracking
+JWT_SECRET=your-super-secret-jwt-key-for-testing
+PORT=5000
+NODE_ENV=development
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+```
+
+### Server Commands
+```bash
+# From root directory (where server.js is located)
+npm install          # Install dependencies
+npm run dev         # Start development server
+npm start           # Start production server
+```
+
+## 📊 All 16 API Endpoints
+
+### Authentication (8 endpoints)
+1. `GET /health` - Health check
+2. `POST /api/auth/register` - User registration
+3. `POST /api/auth/login` - User login
+4. `GET /api/auth/profile` - Get profile
+5. `PUT /api/auth/profile` - Update profile
+6. `PUT /api/auth/change-password` - Change password
+7. `GET /api/auth/users` - Get all users
+8. `POST /api/auth/logout` - User logout
+
+### Tracking (8 endpoints)
+9. `POST /api/tracking/start-break` - Start break
+10. `POST /api/tracking/end-break` - End break
+11. `GET /api/tracking/today` - Get today's data
+12. `GET /api/tracking/stats` - Get statistics
+13. `PUT /api/tracking/work-time` - Update work time
+14. `GET /api/tracking/users` - Get all users with status
+15. `GET /api/tracking/user/:userId/monthly` - Get user monthly data
+16. `GET /api/tracking/monthly` - Get all users monthly data
+
+## 🎯 Testing Success Criteria
+
+All tests pass when:
+- ✅ All 16 endpoints return expected responses
+- ✅ Authentication works correctly
+- ✅ Data is properly stored and retrieved
+- ✅ Validation catches invalid input
+- ✅ Error handling provides meaningful messages
+- ✅ Rate limiting prevents abuse
+- ✅ Performance meets requirements
 
 ---
 
